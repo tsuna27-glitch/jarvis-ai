@@ -32,36 +32,42 @@ for message in st.session_state.messages:
         st.write(message["content"])
 
 # --- MULTIMODAL MEDIA HUB ---
-# Visually separate inputs using standard rules
 st.write("---")
 col1, col2 = st.columns(2)
 
-active_audio_part = None
-active_image_part = None
+active_media = []
 
 with col1:
     audio_file = st.audio_input("🎤 Record voice input")
     if audio_file is not None:
-        audio_bytes = audio_file.getvalue()
-        active_audio_part = types.Part.from_bytes(
-            data=audio_bytes,
-            mime_type="audio/wav"
-        )
+        # Read the raw recording bytes safely
+        audio_data = audio_file.read()
+        if audio_data:
+            active_media.append(
+                types.Part.from_bytes(
+                    data=audio_data,
+                    mime_type="audio/wav"
+                )
+            )
 
 with col2:
     photo_file = st.camera_input("📷 Take a picture snapshot")
     if photo_file is not None:
-        active_image_part = Image.open(photo_file)
+        try:
+            img = Image.open(photo_file)
+            active_media.append(img)
+        except Exception:
+            pass
 
 # 6. Interaction Loop Processing
 if user_input := st.chat_input("Ask Great Sage Jarvis a question..."):
     
-    # Bundle input package safely
+    # Bundle input package safely starting with the text prompt string
     content_list = [user_input]
-    if active_audio_part is not None:
-        content_list.append(active_audio_part)
-    if active_image_part is not None:
-        content_list.append(active_image_part)
+    
+    # Only append media elements if they actually contain data
+    if active_media:
+        content_list.extend(active_media)
     
     # Print what you submitted natively
     with st.chat_message("user", avatar="👤"):
@@ -96,3 +102,5 @@ if user_input := st.chat_input("Ask Great Sage Jarvis a question..."):
         st.write(ai_response)
         
     st.session_state.messages.append({"role": "assistant", "content": ai_response})
+    
+    
