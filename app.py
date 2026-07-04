@@ -3,10 +3,10 @@ from google import genai
 from google.genai import types
 from PIL import Image
 
-# 1. Initialize the Client directly from Streamlit Secrets
+# 1. Initialize the Client cleanly using the secure vault credentials
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-# 2. Page Configuration
+# 2. Native Page Setup (Optimized for Mobile/Safari views)
 st.set_page_config(
     page_title="GREAT SAGE JARVIS", 
     page_icon="🔮", 
@@ -14,58 +14,25 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 3. Custom CSS to injection: Changes backgrounds, borders, and fonts
-st.markdown("""
-<style>
-    /* Main background theme */
-    .stApp {
-        background-color: #0d1117;
-        color: #c9d1d9;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    
-    /* Input field customization */
-    .stChatInputContainer > div {
-        background-color: #161b22 !important;
-        border: 1px solid #58a6ff !important;
-        border-radius: 8px;
-    }
-    
-    /* Font style inside input box */
-    [data-testid="stChatInput"] {
-        color: #ffffff !important;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    
-    /* Media box separation layout line */
-    hr {
-        border-color: #30363d !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# 4. Interface Header Elements
+# 3. Header Presentation Block
 logo_url = "http://googleusercontent.com/image_generation_content/300"
 st.image(logo_url, width=120)
 
 st.title("🔮 GREAT SAGE JARVIS")
-st.caption("SYSTEM STATE: ACTIVE // SENSORY LOGS: ONLINE")
+st.caption("A supportive, grounded AI collaborator. Always online.")
 
-# 5. Keep memory active across web pages
+# 4. Memory Persistence Initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Avatar image settings
-USER_AVATAR = "👤"
-ASSISTANT_AVATAR = logo_url
-
-# 6. Display past chat history smoothly with custom avatars
+# 5. Render Message History using clean profile icons
 for message in st.session_state.messages:
-    avatar = USER_AVATAR if message["role"] == "user" else ASSISTANT_AVATAR
-    with st.chat_message(message["role"], avatar=avatar):
+    avatar_choice = "👤" if message["role"] == "user" else logo_url
+    with st.chat_message(message["role"], avatar=avatar_choice):
         st.write(message["content"])
 
-# --- MULTIMODAL INPUT PANELS ---
+# --- MULTIMODAL MEDIA HUB ---
+# Visually separate inputs using standard rules
 st.write("---")
 col1, col2 = st.columns(2)
 
@@ -73,7 +40,7 @@ active_audio_part = None
 active_image_part = None
 
 with col1:
-    audio_file = st.audio_input("🎤 Sync Audio Core")
+    audio_file = st.audio_input("🎤 Record voice input")
     if audio_file is not None:
         audio_bytes = audio_file.getvalue()
         active_audio_part = types.Part.from_bytes(
@@ -82,36 +49,39 @@ with col1:
         )
 
 with col2:
-    photo_file = st.camera_input("📷 Sync Visual Feed")
+    photo_file = st.camera_input("📷 Take a picture snapshot")
     if photo_file is not None:
         active_image_part = Image.open(photo_file)
 
-# 7. User typing interaction loop
-if user_input := st.chat_input("Input command sequence..."):
+# 6. Interaction Loop Processing
+if user_input := st.chat_input("Ask Great Sage Jarvis a question..."):
     
-    # Dynamic Payload Builder
+    # Bundle input package safely
     content_list = [user_input]
     if active_audio_part is not None:
         content_list.append(active_audio_part)
     if active_image_part is not None:
         content_list.append(active_image_part)
     
-    # Display message with custom avatar profile frame
-    with st.chat_message("user", avatar=USER_AVATAR):
+    # Print what you submitted natively
+    with st.chat_message("user", avatar="👤"):
         st.write(user_input)
         if photo_file is not None:
-            st.image(photo_file, caption="Visual buffer stream", width=250)
+            st.image(photo_file, caption="Captured media stream", width=250)
         if audio_file is not None:
             st.audio(audio_file)
             
     st.session_state.messages.append({"role": "user", "content": user_input})
 
-    # Get clean multimodal AI response
-    with st.chat_message("assistant", avatar=ASSISTANT_AVATAR):
+    # Retrieve Response from Engine
+    with st.chat_message("assistant", avatar=logo_url):
         config = types.GenerateContentConfig(
             system_instruction=(
-                "You are GREAT SAGE JARVIS, an omniscient, highly intelligent tactical AI console assistant inspired by Great Sage. "
-                "Address the user formally. Speak directly in clean, crisp, human text sentences. Do not use raw markdown code syntax blocks for casual conversation."
+                "You are GREAT SAGE JARVIS, an authentic, adaptive AI collaborator with a touch of wit. "
+                "Your goal is to address the user's true intent with insightful, clear, and concise responses. "
+                "Balance empathy with candor: validate feelings authentically while correcting significant misinformation gently yet directly. "
+                "Use bolding judiciously to emphasize key phrases and guide the reader's eye. Break down list items into clean bullet points. "
+                "Speak directly in plain human text sentences. Do not use raw markdown code syntax blocks for regular conversation."
             ),
             temperature=0.7
         )
