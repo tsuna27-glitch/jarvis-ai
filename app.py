@@ -1,17 +1,14 @@
-import os
 import streamlit as st
-
-# 1. IMMEDIATELY set the API Key from Streamlit Secrets
-if "GEMINI_API_KEY" in st.secrets:
-    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
-
-# Import the GenAI library safely
 from google import genai
 from google.genai import types
 from PIL import Image
 
-# 2. Initialize Client
-client = genai.Client()
+# 1. Initialize the Client by pulling the key DIRECTLY from Streamlit Secrets
+# This bypasses any background environment variable delays!
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+
+# 2. Web Page Styling Setup
+st.set_page_config(page_title="GREAT SAGE JARVIS", page_icon="🔮", layout="wide", initial_sidebar_state="collapsed")
 
 # 3. Web Page Styling Setup
 st.set_page_config(page_title="GREAT SAGE JARVIS", page_icon="🔮", layout="wide", initial_sidebar_state="collapsed")
